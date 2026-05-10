@@ -1,0 +1,1 @@
+This is a collection of questions I am doing to learn Verilog. I am using HDLBits to practice. I currently have a background in Verilog from CMPEN 270 at Penn State UP, and I plan to take it further using these practice questions and taking CMPEN 331 in the Fall of 2026.
