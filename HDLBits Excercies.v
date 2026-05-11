@@ -75,7 +75,7 @@ module top_module(input [31:0] in, output [31:0] out);
     assign out[7:0] = in[31:24];
 endmodule
 
-//Question 13: Vectorgates
+//Question 14: Vectorgates
 module top_module(input [2:0] a, input [2:0] b, output [2:0] out_or_bitwise, output out_or_logical, output [5:0] out_not);
     assign out_or_bitwise = a|b;
     assign out_or_logical = a||b;
@@ -83,19 +83,183 @@ module top_module(input [2:0] a, input [2:0] b, output [2:0] out_or_bitwise, out
     assign out_not[2:0] = ~a;
 endmodule
 
-//Question 14: Gates4
+//Question 15: Gates4
 module top_module(input [3:0] in, output out_and, output out_or, output out_xor);
     assign out_and = in[3] & in[2] & in[1] & in[0];
     assign out_or = in[3] | in[2] | in[1] | in[0];
     xor(out_xor, in[3], in[2], in[1], in[0]);
 endmodule
 
-//Question 15: Vector3
+//Question 16: Vector3
 module top_module(input [4:0] a,b,c,d,e,f, output [7:0] w, x, y ,z);
     assign {w,x,y,z} = {a,b,c,d,e,f,2'b11};
 endmodule
 
-//Question 16: Vectorr
+//Question 17: Vectorr
 module top_module(input [7:0] in, output [7:0] out);
     assign {out[0], out[1], out[2], out[3], out[4], out[5], out[6], out[7]} = in;
 endmodule
+
+//Question 18: Vector4
+module top_module(input [7:0] in, output [31:0] out);
+    assign out = {{24{in[7]}}, in};
+endmodule
+
+//Question 19: Vector5
+module top_module(input a,b,c,d,e, output [24:0] out);
+    assign out = ~{{5{a}},{5{b}}, {5{c}}, {5{d}}, {5{e}}} ^ {5{{a,b,c,d,e}}};
+endmodule
+
+//Question 20: Module
+module top_module(input a, input b, output out);
+    mod_a instance1 (.out(out), .in1(a), .in2(b));
+endmodule
+
+//Question 21: Module pos
+module top_module ( 
+    input a, 
+    input b, 
+    input c,
+    input d,
+    output out1,
+    output out2);
+    mod_a instance1 (out1, out2, a,b,c,d);
+endmodule
+
+//Question 22: Module name
+module top_module ( 
+    input a, 
+    input b, 
+    input c,
+    input d,
+    output out1,
+    output out2
+);
+    mod_a instance1 (.in1(a), .in2(b), .in3(c), .in4(d), .out1(out1), .out2(out2));
+endmodule
+
+//Question 23: Module shift
+module top_module ( input clk, input d, output q );
+    wire one_two;
+    wire two_three;
+    wire three_out;
+    my_dff dff1 (clk, d, one_two);
+    my_dff dff2 (clk, one_two, two_three);
+    my_dff dff3 (clk, two_three, three_out);
+    assign q = three_out;
+endmodule
+
+//Question 24: Module shift8
+module mux (
+    input [1:0] sel_mux, 
+    input [7:0] zero, 
+    input [7:0] one, 
+    input [7:0] two, 
+    input [7:0] three, 
+    output reg [7:0] q_mux  
+);
+
+    always @(*) begin
+        case (sel_mux)
+            2'b00: q_mux = zero;
+            2'b01: q_mux = one;
+            2'b10: q_mux = two;
+            2'b11: q_mux = three;
+            default: q_mux = 8'b0; 
+        endcase
+    end
+endmodule
+
+module top_module (input clk, input [7:0] d, input [1:0] sel, output [7:0] q);
+    wire [7:0] one_two;
+    wire [7:0] two_three;
+    wire [7:0] three_mux;
+    wire [7:0] two_mux;
+    wire [7:0] one_mux;
+    wire [7:0] zero_mux;
+    my_dff8 dff1 (clk, d, one_two);
+    my_dff8 dff2 (clk, one_two, two_three);
+    my_dff8 dff3 (clk, two_three, three_mux);
+    assign one_mux = one_two;
+    assign two_mux  = two_three;
+    mux mux1 (sel, d, one_mux, two_mux, three_mux, q);
+endmodule
+
+//Question 25: Module add
+module top_module(input [31:0] a, input [31:0] b, output [31:0] sum);
+    wire carry_connection;
+    wire [15:0] lower_out;
+    wire [15:0] upper_out;
+    wire sink;
+    add16 adder1(a[15:0],b[15:0], 1'b0, lower_out, carry_connection);
+    add16 adder2(a[31:16], b[31:16], carry_connection, upper_out, sink);
+    assign sum = {upper_out, lower_out};
+endmodule
+
+//Question 26: Module fadd
+module add1(input a, input b, input cin, output sum, output cout);
+    assign cout = (a&b)|(a&cin)|(b&cin);
+    assign sum = a^b^cin;
+endmodule
+module top_module(input [31:0] a, input [31:0] b, output [31:0] sum);
+    wire [15:0] low_sum;
+    wire intermediate_carry;
+    wire [15:0] high_sum;
+    add16 adder1 (a[15:0], b[15:0], 1'b0, low_sum, intermediate_carry);
+    add16 adder2 (a[31:16], b[31:16], intermediate_carry, high_sum, );
+    assign sum = {high_sum, low_sum};
+endmodule
+
+//Question 27: Module cseladd
+module mux2to1(input [15:0] sum1, input [15:0] sum2, input cin, output [15:0] out);
+    always @(*) begin
+        case (cin)
+            1'b0: out = sum1;
+            1'b1: out = sum2;
+        endcase
+    end
+endmodule
+
+module top_module(input [31:0] a, input [31:0] b, output [31:0] sum);
+    wire [15:0] low_sum;
+    wire [15:0] high_sum0;
+    wire [15:0] high_sum1;
+    wire [15:0] high_sum;
+    wire cout;
+    add16 adder1(a[15:0], b[15:0], 1'b0, low_sum, cout);
+    add16 adder2(a[31:16], b[31:16], 1'b0, high_sum0,);
+    add16 adder3(a[31:16], b[31:16], 1'b1, high_sum1,);
+    mux2to1 mux(high_sum0, high_sum1, cout, high_sum);
+    assign sum = {high_sum, low_sum};
+endmodule
+
+//Question 28: Module addsub
+module xorgate(input [31:0] in1, input sub, output [31:0] result);
+    always @(*) begin
+        case (sub)
+            1'b0: result = in1;
+            1'b1: result = {32{sub}} ^ in1;
+        endcase
+    end
+
+endmodule
+
+module top_module(input [31:0] a, input [31:0] b, input sub, output [31:0] sum);
+    wire int_carry;
+    wire [15:0] low_sum;
+    wire [15:0] high_sum;
+    wire [31:0] term2;
+    xorgate gate(b, sub, term2);
+    add16 adder1(a[15:0], term2[15:0], sub, low_sum, int_carry);
+    add16 adder2(a[31:16], term2[31:16], int_carry, high_sum, );
+    assign sum = {high_sum, low_sum};
+endmodule
+
+//Question 29: Alwaysblock1
+module top_module(input a, input b, output wire out_assign, output reg out_alwaysblock);
+    assign out_assign = a&b;
+    always @(*) out_alwaysblock = a&b;
+endmodule
+
+//Question 30: Alwaysblock2
+module 
