@@ -623,3 +623,208 @@ module top_module(
     assign out_any = in[99:1] | in[98:0];
     assign out_different = in ^ {in[0], in[99:1]};
 endmodule
+
+//Question 61: Mux2to1
+module top_module( 
+    input a, b, sel,
+    output out ); 
+    always @(*) begin
+        case (sel)
+            1'b0: out = a;
+            1'b1: out = b; 
+        endcase
+    end
+endmodule
+
+//Question 62: Mux2to1v
+module top_module( 
+    input [99:0] a, b,
+    input sel,
+    output [99:0] out );
+    always @(*) begin       
+        case (sel)
+            1'b0: out = a;
+            1'b1: out = b; 
+        endcase
+    end
+endmodule
+
+//Question 63: Mux9to1v
+module top_module( 
+    input [15:0] a, b, c, d, e, f, g, h, i,
+    input [3:0] sel,
+    output [15:0] out );
+    always @(*) begin
+        case (sel)
+            4'b0000: out = a;
+            4'b0001: out = b;
+            4'b0010: out = c;
+            4'b0011: out = d;
+            4'b0100: out = e;
+            4'b0101: out = f;
+            4'b0110: out = g;
+            4'b0111: out = h;
+            4'b1000: out = i;
+            default: out = {16{1'b1}};
+        endcase
+    end
+endmodule
+
+//Question 64: Mux256to1
+module top_module(input [255:0] in, input [7:0] sel, output out);
+    assign out = in[sel];
+endmodule
+
+//Question 65: mux256to1v
+module top_module( 
+    input [1023:0] in,
+    input [7:0] sel,
+    output [3:0] out );
+    assign out = in[4*sel +: 4];
+endmodule
+
+//Question 66: Hadd
+module top_module(input a, b, output cout, sum);
+    assign cout = a&b;
+    assign sum = a^b;
+endmodule
+
+//Question 67: Fadd
+module top_module( 
+    input a, b, cin,
+    output cout, sum );
+    assign cout = (a&b)|(cin&a)|(cin&b);
+    assign sum = a^b^cin;
+endmodule
+
+//Question 68: Adder3
+module fadd( 
+    input a, b, cin,
+    output cout, sum );
+    assign cout = (a&b)|(cin&a)|(cin&b);
+    assign sum = a^b^cin;
+endmodule
+
+module top_module( 
+    input [2:0] a, b,
+    input cin,
+    output [2:0] cout,
+    output [2:0] sum );
+    fadd fadd1 (a[0], b[0], cin, cout[0], sum[0]);
+    fadd fadd2 (a[1], b[1], cout[0], cout[1], sum[1]);
+    fadd fadd3 (a[2], b[2], cout[1], cout[2], sum[2]);
+endmodule
+
+//Question 69: Exams/m2014 q4j
+module fadd( 
+    input a, b, cin,
+    output cout, sum );
+    assign cout = (a&b)|(cin&a)|(cin&b);
+    assign sum = a^b^cin;
+endmodule
+
+module top_module( 
+    input [3:0] x, y,
+    output [4:0] sum );
+    wire [2:0] cout;
+    fadd fadd1 (x[0], y[0], 0, cout[0], sum[0]);
+    fadd fadd2 (x[1], y[1], cout[0], cout[1], sum[1]);
+    fadd fadd3 (x[2], y[2], cout[1], cout[2], sum[2]);
+    fadd fadd4 (x[3], y[3], cout[2], sum[4], sum[3]);
+endmodule
+
+//Question 70: Exams/ece241 2014 q1c
+module top_module (
+    input [7:0] a,
+    input [7:0] b,
+    output [7:0] s,
+    output overflow
+); 
+    assign s = a + b;
+    assign overflow = (s[7] !== a[7]) & (s[7] !== b[7]);
+endmodule
+
+//Question 71: Adder100
+module fadd( 
+    input a, b, cin,
+    output cout, sum );
+    assign cout = (a&b)|(cin&a)|(cin&b);
+    assign sum = a^b^cin;
+endmodule
+
+module top_module( 
+    input [99:0] a, b,
+    input cin,
+    output cout,
+    output [99:0] sum );
+    generate
+        genvar i;
+        reg [100:0] carry;
+        always @(*) begin
+            carry[0] = cin;
+        end
+        for (i = 0; i < 100; i = i + 1) begin: adder_case
+            fadd adder(a[i], b[i], carry[i], carry[i+1], sum[i]);
+        end
+        always @(*) begin
+            cout = carry[100];
+        end
+    endgenerate
+endmodule
+
+//Question 72: Bcdadd4
+module top_module ( 
+    input [15:0] a, b,
+    input cin,
+    output cout,
+    output [15:0] sum );
+    reg [4:0] carry;
+    assign carry[0] = cin;
+    generate
+        genvar i;
+        for (i = 0; i < 4; i = i + 1) begin: add_case
+            bcd_fadd adder (a[4*i +: 4], b[4*i +:4], carry[i], carry[i+1], sum[4*i+:4]);
+        end
+    endgenerate
+    assign cout = carry[4];
+endmodule
+
+//Question 73: Kmap1
+module top_module(
+    input a,
+    input b,
+    input c,
+    output out  ); 
+    assign out = a|b|c;
+endmodule
+
+//Question 74: Kmap2
+module top_module(
+    input a,
+    input b,
+    input c,
+    input d,
+    output out  ); 
+    assign out = (~b&~c)|(~a&~d)|(~a&b&c)|(a&c&d);
+endmodule
+
+//Question 75: Kmap3
+module top_module(
+    input a,
+    input b,
+    input c,
+    input d,
+    output out  ); 
+    assign out = (~b&c)|a;
+endmodule
+
+//Question 76: Kmap4
+module top_module(
+    input a,
+    input b,
+    input c,
+    input d,
+    output out  ); 
+	assign out =a^b^c^d;
+endmodule
+
