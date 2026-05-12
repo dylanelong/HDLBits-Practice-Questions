@@ -828,3 +828,203 @@ module top_module(
 	assign out =a^b^c^d;
 endmodule
 
+//Question 77: Exams/ece241 2013 q2
+module top_module (
+    input a,
+    input b,
+    input c,
+    input d,
+    output out_sop,
+    output out_pos
+); 
+    assign out_sop = (~a&~b&c)|(c&d);
+    assign out_pos = c&(~b|d)&(~a|b);
+endmodule
+
+//Question 78: Exams/m2014q3
+module top_module (
+    input [4:1] x, 
+    output f );
+    assign f = (~x[1]&x[3])|(x[2]&x[4]);
+endmodule
+
+//Question 79: Exams/2012 q1g
+module top_module (
+    input [4:1] x,
+    output f
+); 
+    assign f = (~x[2]&~x[4])|(~x[1]&x[3])|(x[2]&x[3]&x[4]);
+endmodule
+
+//Question 80: Exams/ece241 2014 q3
+module top_module (
+    input c,
+    input d,
+    output [3:0] mux_in
+); 
+    assign mux_in[0] = c|d;
+    assign mux_in[1] = 0;
+    assign mux_in[2] = ~d;
+    assign mux_in[3]  =c&d;
+endmodule
+
+//Question 81: Dff
+module top_module (
+    input clk,   
+    input d,
+    output reg q );
+    always @(posedge clk) begin
+        q = d;
+    end
+
+endmodule
+
+//Question 82: Dff8
+module top_module (
+    input clk,
+    input [7:0] d,
+    output [7:0] q
+);
+    always @(posedge clk) begin
+        q = d;
+    end
+endmodule
+
+//Question 83: Dff8r
+module top_module (
+    input clk,
+    input reset,     
+    input [7:0] d,
+    output [7:0] q
+);
+    always @(posedge clk) begin
+        if (reset == 1) begin
+            q = {8{1'b0}};
+        end
+        else begin
+            q = d;
+        end
+    end
+endmodule
+
+//Question 84: Dff8p
+module top_module (
+    input clk,
+    input reset,
+    input [7:0] d,
+    output [7:0] q
+);
+    always @(negedge clk) begin
+        if (reset == 1) begin
+            q = 8'h0x34;
+        end
+        else begin
+            q = d;
+        end
+    end
+endmodule
+
+//Question 85: Dff8ar
+module top_module (
+    input clk,
+    input areset,   
+    input [7:0] d,
+    output [7:0] q
+);
+    always  @(posedge clk or posedge areset) begin
+        if (areset == 1) begin
+            q = 8'b0;
+        end
+        else begin
+            q = d;
+        end
+    end
+endmodule
+
+//Question 86: Dff16e
+module top_module (
+    input clk,
+    input resetn,
+    input [1:0] byteena,
+    input [15:0] d,
+    output [15:0] q
+);
+    always @(posedge clk) begin
+        if (resetn == 0) begin
+            q = 16'b0;
+        end
+        else begin
+            if (byteena[0] == 1) begin
+                q[7:0] = d[7:0];
+            end
+            if (byteena[1] == 1) begin
+                q[15:8] = d[15:8];
+            end
+        end
+    end
+endmodule
+
+//Question 87: Exams/m2014 q4a
+module top_module (
+    input d, 
+    input ena,
+    output q);
+    always @(*) begin
+        if (ena) begin
+            q = d;
+        end
+    end
+endmodule
+
+//Question 88: Exams/m2014 q4b
+module top_module (
+    input clk,
+    input ar,   
+    input d,
+    output q
+);
+    always  @(posedge clk or posedge ar) begin
+        if (ar == 1) begin
+            q = 1'b0;
+        end
+        else begin
+            q = d;
+        end
+    end
+endmodule
+
+//Question 89: Exams/m2014 q4c
+module top_module (
+    input clk,
+    input d, 
+    input r,   // synchronous reset
+    output q);
+    always @(posedge clk) begin
+        if (r) begin
+            q = 1'b0;
+        end
+        else begin 
+            q= d;
+        end
+    end
+endmodule
+
+//Question 90: Exams/m2014 q4d
+module top_module (
+    input clk,
+    input in, 
+    output out);
+    always @(posedge clk) begin
+        out <= (in ^ out);
+    end
+endmodule
+
+//Question 91: Mt2015 muxdff
+module top_module (
+	input clk,
+	input L,
+	input r_in,
+	input q_in,
+	output reg Q);
+
+endmodule
