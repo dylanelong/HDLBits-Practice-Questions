@@ -1026,5 +1026,206 @@ module top_module (
 	input r_in,
 	input q_in,
 	output reg Q);
+    always @(posedge clk) begin
+        case (L) 
+            1'b0: Q  <= q_in;
+            1'b1: Q  <= r_in;
+        endcase
+    end
+endmodule
 
+//Question 92: Exams/2014 q4a
+module top_module (
+    input clk,
+    input w, R, E, L,
+    output Q
+);
+    always @(posedge clk) begin
+        case ({E,L}) 
+            2'b00: Q <= Q;
+            2'b01: Q <= R;
+            2'b10: Q <= w;
+            2'b11: Q <= R;
+        endcase
+    end
+endmodule
+
+//Question 93: Exams/ece241 2014 q4
+module dffmod (input d, input clk, output q, output qn);
+    initial begin
+        q = 1'b0;
+        qn = 1'b1;
+    end
+    always @(posedge clk) begin
+        q = d;
+        qn = ~d;
+    end
+endmodule
+
+module top_module (
+    input clk,
+    input x,
+    output z
+); 
+    reg q0 = 0; 
+    reg q1 = 0;
+    reg q2 = 0;
+    reg q1n = 1;
+    reg q2n =1;
+    dffmod ff0 (x^q0, clk, q0,);
+    dffmod ff1 (x&q1n, clk, q1, q1n);
+    dffmod ff2 (x|q2n, clk, q2, q2n);
+    assign z = ~(q0|q1|q2);
+endmodule
+
+//Question 94: Exams/ece241 2013 q7
+module top_module (
+    input clk,
+    input j,
+    input k,
+    output Q); 
+    always @(posedge clk) begin
+        case ({j,k})
+            2'b00: Q <= Q;
+            2'b01: Q <= 0;
+            2'b10: Q <= 1;
+            2'b11: Q <= ~Q;
+        endcase
+    end
+endmodule
+
+//Question 95: Edgedetect
+module top_module (
+    input clk,
+    input [7:0] in,
+    output [7:0] pedge
+);
+    reg [7:0] prev;
+    always @(posedge clk) begin
+        integer i;
+        for (i = 0; i < 8; i = i + 1) begin: comparison
+            if(prev[i] == 0 & in[i] == 1) begin
+                pedge[i] = 1;
+            end
+            else begin
+                pedge[i] = 0;
+            end
+        end
+        prev = in;
+    end
+endmodule
+
+//Question 96: Edgedetect2
+module top_module (
+    input clk,
+    input [7:0] in,
+    output [7:0] anyedge
+);
+    reg [7:0] prev;
+    always @(posedge clk) begin
+        integer i;
+        for (i = 0; i < 8; i = i + 1) begin: comparison
+            if(prev[i]^in[i]) begin
+                anyedge[i] = 1;
+            end
+            else begin
+                anyedge[i] = 0;
+            end
+        end
+        prev = in;
+    end
+endmodule
+
+//Question 97: Edgecapture
+module top_module (
+    input clk,
+    input reset,
+    input [31:0] in,
+    output [31:0] out
+);
+    reg [31:0] prev;
+    always @(posedge clk) begin
+        if (reset) begin
+            out = 32'b0;
+        end
+        else begin
+            integer i; 
+            for (i = 0; i < 32; i = i + 1) begin: comparison
+                if (prev[i] == 1 & in[i] == 0) begin
+                    out[i] = 1;
+                end
+            end
+        end
+        prev = in;
+    end
+endmodule
+
+//Question 98: Dualedge
+module pdff(input d, input clk, output q); 
+    always @(posedge clk) begin
+        q = d;
+    end
+endmodule
+
+module ndff(input d, input clk, output q); 
+    always @(negedge clk) begin
+        q = d;
+    end
+endmodule 
+
+module top_module (
+    input clk,
+    input d,
+    output q
+);
+    reg qn;
+    reg qp;
+    pdff ff1 (d,clk,qp);
+    ndff ff2 (d, clk, qn);
+    assign q = clk==1 ? qp : qn;
+endmodule
+
+//Question 99: Count15
+module top_module (
+    input clk,
+    input reset,      // Synchronous active-high reset
+    output [3:0] q);
+    always @(posedge clk) begin: count
+        if (reset) begin
+            q = 4'b0;
+        end
+        else begin
+            q = (q+1)%16;
+        end
+    end
+endmodule
+
+//Question 100: Count10
+module top_module (
+    input clk,
+    input reset,        // Synchronous active-high reset
+    output [3:0] q);
+    always @(posedge clk) begin: count
+        if (reset) begin
+            q = 4'b0;
+        end
+        else begin 
+            q = (q+4'b1)%(4'd10);
+        end
+    end
+endmodule
+
+//Problem 101: Count1to10
+module top_module (
+    input clk,
+    input reset,
+    output [3:0] q);
+    always @(posedge clk) begin: count
+        if (reset) begin
+            q = 4'b1;
+        end
+        else begin
+            q = (q%4'd10) + 4'b1;
+        end
+    end
 endmodule
