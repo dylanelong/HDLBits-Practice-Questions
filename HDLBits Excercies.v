@@ -1229,3 +1229,171 @@ module top_module (
         end
     end
 endmodule
+
+//Question 102: Countslow
+module top_module (
+    input clk,
+    input slowena,
+    input reset,
+    output [3:0] q);
+    always @(posedge clk) begin
+        if (reset) begin
+            q = 4'b0000;
+        end
+        else if (slowena) begin
+            q = (q + 1)%10;
+        end
+        else begin
+            q = q;
+        end
+    end
+endmodule
+
+//Question 103: Exams/ece241 2014 q7a
+module top_module (
+    input clk,
+    input reset,
+    input enable,
+    output [3:0] Q,
+    output c_enable,
+    output c_load,
+    output [3:0] c_d
+); 
+    assign c_d = 4'b0001;
+    assign c_enable = enable;
+    assign c_load = reset || (Q== 4'd12)&&(enable);
+    count4 the_counter(clk, c_enable, c_load, c_d ,Q );
+endmodule
+
+//Question 104: Exams/ece241 2014 q7b
+module top_module (
+    input clk,
+    input reset,
+    output reg OneHertz,
+    output [2:0] c_enable
+); 
+    wire [3:0] c1toc2;
+    wire [3:0] c2toc3;
+    wire [3:0] c3toout;
+    assign c_enable[0] = 1;
+    assign c_enable[1] = c1toc2 == 4'd9 ? 1:0;
+    assign c_enable[2] = c2toc3 == 4'd9 && c1toc2 == 4'd9 ? 1:0;
+    bcdcount counter0 (clk, reset, c_enable[0],c1toc2);
+    bcdcount counter1 (clk, reset, c_enable[1],c2toc3);
+    bcdcount counter2 (clk, reset, c_enable[2], c3toout);
+    assign OneHertz = (c1toc2 == 4'd9 && c2toc3 == 4'd9 && c3toout == 4'd9);
+endmodule
+
+//Question 105: Countbcd
+module bcd_counter(
+    input clk, 
+    input reset, 
+    input enable, 
+    output reg [3:0] q
+);
+    always @(posedge clk) begin
+        if (reset) begin
+            q <= 4'b0;
+        end else if (enable) begin
+            if (q == 4'd9)
+                q <= 4'b0;
+            else
+                q <= q + 4'b1;
+        end
+    end
+endmodule
+
+module top_module (
+    input clk,
+    input reset,
+    output [3:1] ena,
+    output [15:0] q
+);
+    wire en1 = 1'b1;               
+    wire en2 = (q[3:0] == 4'd9);       
+    wire en3 = (q[7:4] == 4'd9 && en2); 
+    wire en4 = (q[11:8] == 4'd9 && en3);
+    assign ena = {en4, en3, en2};
+    bcd_counter c1(clk, reset, en1, q[3:0]);
+    bcd_counter c2(clk, reset, en1 && en2, q[7:4]);
+    bcd_counter c3(clk, reset, en1 && en2 && en3, q[11:8]);
+    bcd_counter c4(clk, reset, en1 && en2 && en3 && en4, q[15:12]);
+endmodule
+
+//Question 106: Count clock
+module top_module(
+    input clk,
+    input reset,
+    input ena,
+    output pm,
+    output [7:0] hh,
+    output [7:0] mm,
+    output [7:0] ss); 
+    always @(posedge clk) begin
+        if (reset) begin
+            ss = 8'b0;
+            mm = 8'b0;
+            hh = 8'b00010010;
+            pm = 0;
+        end
+        else if (ena) begin
+            if (ss[3:0] == 4'b1001) begin
+                if (ss[7:4] == 4'b0101) begin
+                    if (mm[3:0] == 4'b1001) begin
+                        if(mm[7:4] == 4'b0101) begin
+                            if(hh[3:0] == 4'b1001) begin
+                                hh[3:0] = 4'b0;
+                                hh[7:4] = 4'b0001;
+                                ss = 8'b0;
+                                mm = 8'b0;
+                            end
+                            else if (hh == 8'b00010001) begin
+                                hh = 8'b00010010;
+                                ss = 8'b0;
+                                mm = 8'b0;
+                                pm = ~pm;
+                            end
+                            else if (hh == 8'b00010010) begin
+                                hh = 8'b00000001;
+                                ss = 8'b0;
+                                mm = 8'b0;
+                            end
+                            else begin
+                                hh[3:0] = hh[3:0] + 8'b1;
+                                ss = 8'b0;
+                                mm = 8'b0;
+                            end
+                        end
+                        else begin
+                            mm[3:0] = 4'b0;
+                            mm[7:4] = mm[7:4] + 4'b1;
+                            ss = 8'b0;
+                        end
+                    end
+                    else begin
+                        ss = 8'b0;
+                        mm[3:0] = mm[3:0] + 1; 
+                    end
+                end
+                else begin
+                    ss[3:0] = 4'b0;
+                    ss[7:4] = ss[7:4] + 4'b1;
+                end
+            end
+            else begin
+                ss[3:0] = ss[3:0] + 1;
+            end
+        end
+    end
+endmodule
+
+//Question 107: Shift 4
+module top_module(
+    input clk,
+    input areset,  // async active-high reset to zero
+    input load,
+    input ena,
+    input [3:0] data,
+    output reg [3:0] q); 
+    
+endmodule
