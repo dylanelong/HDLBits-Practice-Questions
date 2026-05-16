@@ -1395,5 +1395,270 @@ module top_module(
     input ena,
     input [3:0] data,
     output reg [3:0] q); 
-    
+    always @(posedge clk or posedge areset) begin
+        if (areset == 1) begin
+            q <= 4'b0;
+        end
+        else if(load == 1) begin
+            q <= data;
+        end
+        else if (ena == 1) begin
+            q <= {1'b0, q[3:1]};
+        end
+    end
+endmodule
+
+//Question 108: Rotate100
+module top_module(
+    input clk,
+    input load,
+    input [1:0] ena,
+    input [99:0] data,
+    output reg [99:0] q); 
+    always @(posedge clk) begin
+        if (load == 1) begin
+            q <= data;
+        end
+        else if (ena == 2'b10) begin
+            q <= {q[98:0], q[99]};
+        end
+        else if (ena == 2'b01) begin
+            q <= {q[0], q[99:1]};
+        end
+    end
+endmodule
+
+//Question 109: Shift18
+module top_module(
+    input clk,
+    input load,
+    input ena,
+    input [1:0] amount,
+    input [63:0] data,
+    output reg [63:0] q); 
+    always @(posedge clk) begin
+        if (load) begin
+            q <= data;
+        end
+        else if (ena) begin
+            if (amount == 2'b00) begin
+                q <= {q[62:0], 1'b0};
+            end
+            else if (amount == 2'b01) begin
+                q <= {q[55:0], 8'b0};
+            end
+            else if (amount == 2'b10) begin
+                q <= {q[63], q[63:1]};
+            end
+            else begin
+                q <= {{8{q[63]}}, q[63:8]};
+            end
+        end
+    end
+endmodule
+
+//Question 110: Lfsrs
+module top_module(
+    input clk,
+    input reset,    // Active-high synchronous reset to 5'h1
+    output [4:0] q); 
+    always @(posedge clk) begin
+        if (reset) begin
+            q <= 5'b1;
+        end
+        else begin
+            q[0] <= q[1];
+            q[1] <= q[2];
+            q[2] <= q[3] ^ q[0];
+            q[3] <= q[4];
+            q[4] <= q[0] ^ 5'b0;
+        end
+    end
+endmodule
+
+//Question 111: Mt2015 lsfr
+module mux_ (input in0, input in1, input sel, output out);
+    assign out = sel == 0 ? in0 : in1;
+endmodule
+
+module dff_ (input d, input clk, output reg q);
+    always @(posedge clk) begin
+        q <= d;
+    end
+endmodule
+
+module top_module (
+	input [2:0] SW,      // R
+	input [1:0] KEY,     // L and clk
+	output [2:0] LEDR);  // Q
+    reg d0, d1, d2;
+    reg q0, q1, q2;
+    mux_ mux0 (q2, SW[0], KEY[1], d0);
+    mux_ mux1 (q0, SW[1], KEY[1], d1);
+    mux_ mux2 (q1^q2, SW[2], KEY[1], d2);
+    dff_ ff0 (d0, KEY[0], q0);
+    dff_ ff1 (d1, KEY[0], q1);
+    dff_ ff2 (d2, KEY[0], q2);
+    assign LEDR = {q2, q1, q0};
+endmodule
+
+//Question 112: Lfsr32
+module top_module(
+    input clk,
+    input reset,
+    output reg [31:0] q
+); 
+    always @(posedge clk) begin
+        if (reset) begin
+            q <= 32'h1;
+        end
+        else begin
+            q <= {q[30:0], 1'b0} ^ ({32{q[31]}} & 32'h80200003);
+        end
+    end
+endmodule
+
+//Question 113: Exams/m2014 q4k
+module dff_ (input d, input clk, input reset,output reg q);
+    always @(posedge clk) begin
+        if (~reset) begin
+            q <= 1'b0;
+        end
+        else begin
+            q <= d;
+        end
+    end
+endmodule
+
+module top_module (
+    input clk,
+    input resetn,   // synchronous reset
+    input in,
+    output out);
+    wire AB, BC, CD;
+    dff_ A(in, clk, resetn, AB);
+    dff_ B(AB, clk, resetn, BC);
+    dff_ C(BC, clk, resetn, CD);
+    dff_ D(CD, clk, resetn, out);
+endmodule
+
+//Question 114: Exams/m2014 q4b
+module MUXDFF (
+    input clk,
+    input w, R, E, L,
+    output Q
+);
+    always @(posedge clk) begin
+        case ({E,L}) 
+            2'b00: Q <= Q;
+            2'b01: Q <= R;
+            2'b10: Q <= w;
+            2'b11: Q <= R;
+        endcase
+    end
+endmodule
+
+module top_module (
+    input [3:0] SW,
+    input [3:0] KEY,
+    output [3:0] LEDR); 
+    MUXDFF A(KEY[0], KEY[3], SW[3], KEY[1], KEY[2], LEDR[3]);
+    MUXDFF B(KEY[0], LEDR[3], SW[2], KEY[1], KEY[2], LEDR[2]);
+    MUXDFF C(KEY[0], LEDR[2], SW[1], KEY[1], KEY[2], LEDR[1]);
+    MUXDFF D(KEY[0], LEDR[1], SW[0], KEY[1], KEY[2], LEDR[0]);
+endmodule
+
+//Question 115: Exams/ece241 2013 q12
+module top_module (
+    input clk,
+    input enable,
+    input S,
+    input A, B, C,
+    output Z ); 
+    reg [0:7] q;
+    always @(posedge clk) begin
+        if (enable == 1) begin
+            q <= {S, q[0:6]};
+        end
+    end
+    always @(*) begin
+        case ({A,B,C}) 
+            3'b000: Z <= q[0];
+            3'b001: Z <= q[1];
+            3'b010: Z <= q[2];
+            3'b011: Z <= q[3];
+            3'b100: Z <= q[4];
+            3'b101: Z <= q[5];
+            3'b110: Z <= q[6];
+            3'b111: Z <= q[7];
+        endcase
+    end
+endmodule
+
+//Question 116: Rule90
+module top_module(
+    input clk,
+    input load,
+    input [511:0] data,
+    output reg [511:0] q ); 
+    always @(posedge clk) begin
+        if (load == 1) begin
+            q <= data;
+        end
+        else begin
+            integer i;
+            for (i = 0; i < 512; i = i + 1) begin: rule90
+                if (i == 0) begin
+                    q[i] <= q[i+1] ^ 1'b0;
+                end
+                else if (i == 511) begin
+                    q[i] <= q[i-1] ^ 1'b0;
+                end
+                else begin
+                    q[i] <= q[i-1] ^ q[i+1];
+                end
+            end
+        end
+    end
+endmodule
+
+//Question 117: Rule110
+module top_module(
+    input clk,
+    input load,
+    input [511:0] data,
+    output [511:0] q
+); 
+    always @(posedge clk) begin
+        if (load) begin
+            q <= data;
+        end
+        else begin
+            integer i;
+            for (i = 0; i<512; i = i + 1) begin: rule110
+                if (i == 0) begin
+                    q[0] <= q[0];
+                end
+                else if (i == 511) begin
+                    q[511] <= q[511] | q[510];
+                end
+                else begin
+                    q[i] <= (q[i-1] ^ q[i]) | (~q[i+1] & q[i-1]);
+                end
+            end
+        end
+    end
+endmodule
+
+//Question 118: Conwaylife
+module top_module(
+    input clk,
+    input load,
+    input [255:0] data,
+    output [255:0] q ); 
+    always @(posedge clk) begin
+        wire [15:0] grid_up [15:0];
+        assign grid_up[14:0] = grid[15:1];
+        assign grid_up[15] = grid[0]
+    end
 endmodule
