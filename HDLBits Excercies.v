@@ -1655,10 +1655,166 @@ module top_module(
     input clk,
     input load,
     input [255:0] data,
-    output [255:0] q ); 
+    output reg [255:0] q /
+); 
+    wire [15:0] grid [15:0];
+    genvar i, r, c;
+    generate
+        for (r = 0; r < 16; r = r + 1) begin: unpack
+            assign grid[r] = q[(r*16) +: 16]; 
+        end
+    endgenerate
+    wire [15:0] grid_up    [15:0];
+    wire [15:0] grid_down  [15:0];
+    wire [15:0] grid_left  [15:0];
+    wire [15:0] grid_right [15:0];
+    wire [15:0] grid_upleft    [15:0];
+    wire [15:0] grid_upright   [15:0];
+    wire [15:0] grid_downleft  [15:0];
+    wire [15:0] grid_downright [15:0];
+    assign grid_up[14:0] = grid[15:1];
+    assign grid_up[15]   = grid[0];
+    assign grid_down[15:1] = grid[14:0];
+    assign grid_down[0]    = grid[15];
+    generate
+        for (i = 0; i < 16; i = i + 1) begin: horiz_shifts
+            assign grid_left[i]  = {grid[i][14:0], grid[i][15]};
+            assign grid_right[i] = {grid[i][0], grid[i][15:1]};
+        end
+    endgenerate
+    assign grid_upleft[14:0] = grid_left[15:1];
+    assign grid_upleft[15]   = grid_left[0];
+    assign grid_upright[14:0] = grid_right[15:1];
+    assign grid_upright[15]   = grid_right[0];
+    assign grid_downleft[15:1] = grid_left[14:0];
+    assign grid_downleft[0]    = grid_left[15];
+    assign grid_downright[15:1] = grid_right[14:0];
+    assign grid_downright[0]    = grid_right[15];
     always @(posedge clk) begin
-        wire [15:0] grid_up [15:0];
-        assign grid_up[14:0] = grid[15:1];
-        assign grid_up[15] = grid[0]
+        if (load) begin
+            q <= data;
+        end
+        else begin
+            integer row, col;
+            reg [3:0] neighbors;
+            for (row = 0; row < 16; row = row + 1) begin
+                for (col = 0; col < 16; col = col + 1) begin
+                    neighbors = grid_up[row][col] + grid_down[row][col] + grid_left[row][col] + grid_right[row][col] + grid_upleft[row][col] + grid_upright[row][col] + grid_downleft[row][col] + grid_downright[row][col];
+                    if (neighbors == 3) begin
+                        q[(row*16) + col] <= 1'b1; 
+                    end
+                    else if (neighbors == 2) begin
+                        q[(row*16) + col] <= grid[row][col]; 
+                    end
+                    else begin
+                        q[(row*16) + col] <= 1'b0; 
+                    end
+                end
+            end
+        end
     end
+endmodule
+
+//Question 119: fsm1
+module top_module(
+    input clk,
+    input areset,    
+    input in,
+    output out); 
+
+    parameter A=0, B=1; 
+    reg state, next_state;
+
+    always @(*) begin    
+        if (in == 0) begin
+            next_state = ~state;
+        end
+        else begin
+            next_state = state;
+        end
+    end
+
+    always @(posedge clk, posedge areset) begin   
+        if (areset == 1) begin
+            state = 1;
+        end
+        else begin
+            state = next_state;
+        end
+    end
+
+    assign out = state == 1;
+
+endmodule
+
+//Question 120: fsm1s
+module top_module(clk, reset, in, out);
+    input clk;
+    input reset;
+    input in;
+    output out;
+    reg out;
+    reg present_state, next_state;
+    always @(posedge clk) begin
+        if (reset) begin  
+            present_state = 1;
+            out = 1;
+        end else begin
+            case (present_state)
+                1'b0: next_state = in == 1 ? 1'b0 : 1'b1;
+                1'b1: next_state = in == 1 ? 1'b1 : 1'b0;
+            endcase
+            present_state = next_state;   
+            case (present_state)
+                1'b0: out = 0;
+                1'b1: out = 1;
+            endcase
+        end
+    end
+endmodule
+
+//Question 121: Fsm2
+module top_module(
+    input clk,
+    input areset,    // Asynchronous reset to OFF
+    input j,
+    input k,
+    output out);
+    parameter OFF=0, ON=1; 
+    reg state, next_state;
+    always @(*) begin
+        next_state = ~state & j | state & ~k;
+    end
+    always @(posedge clk, posedge areset) begin
+        if (areset == 1) begin
+            state = OFF;
+        end
+        else begin
+            state = next_state; 
+        end
+    end
+    assign out = state == ON ? 1'b1 : 1'b0;
+endmodule
+
+//Question 122: Fsm2s
+module top_module(
+    input clk,
+    input reset, 
+    input j,
+    input k,
+    output out);
+    parameter OFF=0, ON=1; 
+    reg state, next_state;
+    always @(*) begin
+        next_state = ~state & j | state & ~k;
+    end
+    always @(posedge clk) begin
+        if (reset == 1) begin
+            state = OFF;
+        end
+        else begin
+            state = next_state; 
+        end
+    end
+    assign out = state == ON ? 1'b1 : 1'b0;
 endmodule
